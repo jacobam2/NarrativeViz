@@ -1,53 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html class="OVERALL">
+  <style>
+      .OVERALL {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0%;
+        left: 0%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        overflow-y: scroll;
+      }
+      .Body {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0%;
+        left: 0%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .Title {
+        text-align: center;
+        position: relative;
+        width: 100%;
+        height: 10%;
+        top: 0%;
+        left: 0%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .Pie1 {
+        text-align: center;
+        position: absolute;
+        width: 50%;
+        height: 40%;
+        top: 10%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .Pie2 {
+        text-align: center;
+        position: absolute;
+        width: 50%;
+        height: 40%;
+        top: 10%;
+        left: 50%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .Line {
+        text-align: center;
+        position: absolute;
+        width: 100%;
+        height: 60%;
+        top: 50%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .PieSVG {
+        position: absolute;
+        width: 60%;
+        height: 90%;
+        top: 10%;
+        left: 20%;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+      .LineSVG {
+        position: absolute;
+        width: 95%;
+        height: 72%;
+        top: 10%;
+        left: 2.5%;
+        margin-top: 0%;
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-bottom: 0%;
+      }
+      .Tooltip {
+      }
+    </style>
   <head>  
     <title>Hypothetical College Scholarship Breakdown 2010-2015</title>
     <meta charset="UTF-8">
-    <meta name="description" content="This page contains a hypothetical breakdown of college scholarships for a class project for CS416.">.
-    <style>
-      .Pie1 {
-        border: 5px outset red;
-        background-color: lightblue;
-        text-align: center;
-        position: relative;
-        width: 0.5;
-        height: 0.45;
-        top: 0.1;
-      }
-      .Pie2 {
-        border: 5px outset red;
-        background-color: lightblue;
-        text-align: center;
-        position: relative;
-        width: 0.5;
-        height: 0.45;
-        top: 0.1;
-        left: 0.5;
-      }
-      .Line {
-        border: 5px outset red;
-        background-color: lightblue;
-        text-align: center;
-        position: relative;
-        width: 1;
-        height: 0.45;
-        top: 0.55;
-      }
-    </style>
+    <meta name="description" content="This page contains a hypothetical breakdown of college scholarships for a class project for CS416.">
+    
   </head>
-  <body>
-    <h1>Hypothetical College Scholarship Breakdown 2010-2015</h1>
+  <body class="Body">
+    <h1 class="Title">Hypothetical College Scholarship Breakdown 2010-2015</h1>
 
     <div class="Pie1">
-      <h2>Scholarship Allocation by College</h2>
+      <h2 class="Title">Scholarship Allocation by College</h2>
+      <svg class="PieSVG">
+      </svg>
     </div>
 
     <div class="Pie2">
-      <h2>Scholarship Allocation by Major</h2>
+      <h2 class ="Title">Scholarship Allocation by Major</h2>
+      <svg class="PieSVG">
+      </svg>
     </div>
 
     <div class="Line">
-      <h2>Scholarship amount over time</h2>
+      <h2 class="Title">Scholarship amount over time</h2>
+      <svg class="LineSVG">
+        <rect height=100% width=100% x=0% y=0%></rect>
+      </svg>
     </div>
 
   </body>
