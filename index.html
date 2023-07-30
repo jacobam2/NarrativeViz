@@ -1,128 +1,594 @@
 <!DOCTYPE html>
 <html class="OVERALL">
+  <!-- CSS styles for all items on page -->
   <style>
-      .OVERALL {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0%;
-        left: 0%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-        overflow-y: scroll;
-      }
-      .Body {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        top: 0%;
-        left: 0%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .Title {
-        text-align: center;
-        position: relative;
-        width: 100%;
-        height: 10%;
-        top: 0%;
-        left: 0%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .Pie1 {
-        text-align: center;
-        position: absolute;
-        width: 50%;
-        height: 40%;
-        top: 10%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .Pie2 {
-        text-align: center;
-        position: absolute;
-        width: 50%;
-        height: 40%;
-        top: 10%;
-        left: 50%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .Line {
-        text-align: center;
-        position: absolute;
-        width: 100%;
-        height: 60%;
-        top: 50%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .PieSVG {
-        position: absolute;
-        width: 60%;
-        height: 90%;
-        top: 10%;
-        left: 20%;
-        margin-top: 0;
-        margin-left: 0;
-        margin-right: 0;
-        margin-bottom: 0;
-      }
-      .LineSVG {
-        position: absolute;
-        width: 95%;
-        height: 72%;
-        top: 10%;
-        left: 2.5%;
-        margin-top: 0%;
-        margin-left: 0%;
-        margin-right: 0%;
-        margin-bottom: 0%;
-      }
-      .Tooltip {
-      }
-    </style>
+    /* Style for HTML section */
+    .OVERALL {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0%;
+      left: 0%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+      overflow-y: scroll;
+    }
+    /* Style for Body section */
+    .Body {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0%;
+      left: 0%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for tiles in any section */
+    .Title {
+      text-align: center;
+      position: relative;
+      width: 100%;
+      height: 10%;
+      top: 0%;
+      left: 0%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for first pie chart (left) */
+    .Pie1 {
+      text-align: center;
+      position: absolute;
+      width: 50%;
+      height: 40%;
+      top: 10%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for second pie chart (right) */
+    .Pie2 {
+      text-align: center;
+      position: absolute;
+      width: 50%;
+      height: 40%;
+      top: 10%;
+      left: 50%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for line chart (below pie charts) */
+    .Line {
+      text-align: center;
+      position: absolute;
+      width: 100%;
+      height: 60%;
+      top: 50%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for pie chart SVG canvases */
+    .PieSVG {
+      position: absolute;
+      width: 60%;
+      height: 90%;
+      top: 10%;
+      left: 20%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for line chart SVG canvas */
+    .LineSVG {
+      position: absolute;
+      width: 95%;
+      height: 72%;
+      top: 10%;
+      left: 2.5%;
+      margin-top: 0%;
+      margin-left: 0%;
+      margin-right: 0%;
+      margin-bottom: 0%;
+    }
+    /* Style for tooltips */
+    .Tooltip {
+    }
+    /* Style for annotations */
+    .Annotation {
+    }
+  </style>
+
+  <!-- Import D3 -->
+  <script src='https://d3js.org/d3.v5.min.js'></script>
+
+  <!-- Header just has information about page -->
   <head>  
     <title>Hypothetical College Scholarship Breakdown 2010-2015</title>
     <meta charset="UTF-8">
     <meta name="description" content="This page contains a hypothetical breakdown of college scholarships for a class project for CS416.">
-    
   </head>
-  <body class="Body">
+
+  <!-- Body has meat of page -->
+  <body class="Body" onload="init()">
     <h1 class="Title">Hypothetical College Scholarship Breakdown 2010-2015</h1>
 
+    <!-- Left pie chart division -->
     <div class="Pie1">
       <h2 class="Title">Scholarship Allocation by College</h2>
       <svg class="PieSVG">
       </svg>
     </div>
-
+    
+    <!-- Right pie chart division -->
     <div class="Pie2">
       <h2 class ="Title">Scholarship Allocation by Major</h2>
       <svg class="PieSVG">
       </svg>
     </div>
 
+    <!-- Line chart division -->
     <div class="Line">
-      <h2 class="Title">Scholarship amount over time</h2>
+      <h2 class="Title">Scholarship Amount Over Time</h2>
       <svg class="LineSVG">
-        <rect height=100% width=100% x=0% y=0%></rect>
       </svg>
     </div>
 
+    <!-- Body scripts -->
+    <script>
+      // Parameters
+      var selectedCollege;
+      var selectedMajor;
+      var previousSelectedCollegeElement;
+      var previousSelectedMajorElement;
+      var highlightedCollegeElementPreviousColor;
+      var highlightedMajorElementPreviousColor;
+      
+      // Global variables holding views of database
+      var collegeNames;
+      var collegeAmounts;
+      var majorNames;
+      var majorAmounts;
+      var amountData;
+      var scholarshipDatabase;
+      
+      // Global variables relating to pie chart sizing
+      var pieRadius;
+      var pieCenterX;
+      var pieCenterY;
+
+      // Global variables relating to line chart sizing
+      var lineOffsetX;
+      var lineOffsetY;
+      var lineWidth;
+      var lineHeight;
+
+      // Computes pie chart dimensions
+      function computePieDimensions()
+      {
+        var scaleFactor = 0.8
+        var samplePieBBox = d3.select('div[class=Pie1]').select('svg').node().getBoundingClientRect();
+        if(samplePieBBox.height < samplePieBBox.width)
+          pieRadius = scaleFactor * (samplePieBBox.height / 2);
+        else
+          pieRadius = scaleFactor * (samplePieBBox.width / 2);
+        pieCenterX = samplePieBBox.width/2;
+        pieCenterY = samplePieBBox.height/2;
+      }
+      
+      // Computes line chart dimensions / metadata
+      function computeLineDimensions()
+      {
+        var xOffsetFactor = 0.04;
+        var yBeginOffsetFactor = 0.025;
+        var yEndOffsetFactor = 0.05;
+        var lineBBox = d3.select('div[class=Line]').select('svg').node().getBoundingClientRect();
+        lineOffsetX = xOffsetFactor * lineBBox.width;
+        lineWidth = lineBBox.width - 2 * lineOffsetX;
+        var lineOffsetYEnd = yEndOffsetFactor * lineBBox.height;
+        lineOffsetY = yBeginOffsetFactor * lineBBox.height;
+        lineHeight = lineBBox.height - lineOffsetY - lineOffsetYEnd;
+      }
+
+      // Computes the college data dictionary
+      function computeCollegeData()
+      {
+        collegeDataDict = {};
+        for(let i = 0; i < scholarshipDatabase.length; ++i)
+        {
+          var collegeName = scholarshipDatabase[i]['College'];
+          if(!(collegeName in collegeDataDict))
+          {
+            collegeDataDict[collegeName] = Number(0)
+          }
+          collegeDataDict[collegeName] += Number(scholarshipDatabase[i]['Gift Amount'])
+        }
+        
+        // Convert dictionary into arrays
+        collegeNames = []
+        collegeAmounts = []
+        for(let key in collegeDataDict)
+        {
+          collegeNames.push(key)
+          collegeAmounts.push(collegeDataDict[key])
+        }
+      }
+      
+      // Computes the major data given a college selection
+      function computeMajorData()
+      {
+        if(selectedCollege === null)
+        {
+          majorNames=[null]
+          majorAmounts=[0]
+        }
+        else
+        {
+          majorDataDict = {};
+          for(let i = 0; i < scholarshipDatabase.length; ++i)
+          {
+            var collegeName = scholarshipDatabase[i]['College'];
+            if(collegeName == selectedCollege)
+            {
+              var majorName = scholarshipDatabase[i]['Major'];
+              if(!(majorName in majorDataDict))
+              {
+                majorDataDict[majorName] = Number(0)
+              }
+              majorDataDict[majorName] += Number(scholarshipDatabase[i]['Gift Amount'])
+            }
+          }
+          
+          // Convert dictionary into arrays
+          majorNames = []
+          majorAmounts = []
+          for(let key in majorDataDict)
+          {
+            majorNames.push(key)
+            majorAmounts.push(majorDataDict[key])
+          }
+        }
+      }
+
+      // Computes the amount data given a college selection and a major selection
+      function computeAmountData()
+      {
+        if(selectedMajor === null)
+        {
+          amountData = []
+          amountData.push(null)
+        }
+        else
+        {
+          amountDataDict = {};
+          for(let i = 0; i < scholarshipDatabase.length; ++i)
+          {
+            var collegeName = scholarshipDatabase[i]['College'];
+            var majorName = scholarshipDatabase[i]['Major'];
+            if(collegeName == selectedCollege && majorName == selectedMajor)
+            {
+              var giftDate = scholarshipDatabase[i]['Gift Date'];
+              if(!(giftDate in amountDataDict))
+              {
+                amountDataDict[giftDate] = 0
+              }
+              amountDataDict[giftDate] += Number(scholarshipDatabase[i]['Gift Amount']);
+            }
+          }
+          // Flatten and sort amount data dictionary
+          amountData = []
+          for(let key in amountDataDict)
+          {
+            var obj = {};
+            obj['Gift Date'] = key;
+            obj['Gift Amount'] = amountDataDict[key];
+            amountData.push(obj)
+          }
+          amountData.sort(function(a,b){ return Date.parse(a['Gift Date']) - Date.parse(b['Gift Date']); });
+        }
+      }
+
+      // Selector function for college chart
+      function selectCollege(selectedCollegeElement)
+      {
+      }
+
+      // Initializes the college pie chart (left)
+      function initializeCollegeChart()
+      {
+        var transform = 'translate('+pieCenterX+', '+pieCenterY+')';
+        var pie = d3.pie();
+        var arc = d3.arc().innerRadius(0).outerRadius(pieRadius);
+        var colors = d3.scaleOrdinal().range(d3.schemeSet3);
+        
+        // Cleanup any old elements
+        previousSelectedCollegeElement = null
+        d3.select('div[class=Pie1]').select('svg').selectAll('g').remove();
+        
+        d3.select('div[class=Pie1]').select('svg')
+          .append('g')
+            .attr('transform',transform)
+          .selectAll('path')
+            .data(pie(collegeAmounts))
+            .enter()
+            .append('path')
+              .attr('d',arc)
+              .attr('fill',function(d,i){return colors(i);})
+              .on("click",function(d,i)
+                {
+                  // Don't change selection if it is the same
+                  if(selectedCollege == collegeNames[i])
+                    return
+                    
+                  // Change border around this element
+                  d3.select(this).attr('stroke','black');
+                  if(!(previousSelectedCollegeElement == null))
+                  {
+                    previousSelectedCollegeElement.attr('stroke',previousSelectedCollegeElement.attr('fill'));
+                  }
+                  previousSelectedCollegeElement = d3.select(this);
+
+                  // Update charts to reflect that this college has been selected
+                  selectedCollege = collegeNames[i];
+                  selectedMajor = null;
+                  computeMajorData()
+                  initializeMajorChart();
+                  computeAmountData()
+                  initializeAmountChart();
+                })
+              .on("mouseover",function()
+                {
+                  d3.select(this).attr('fill-opacity',0.2);
+                })
+              .on("mouseout",function()
+                {
+                  d3.select(this).attr('fill-opacity',1);
+                });
+      }
+      
+      // Initializes the major pie chart (right)
+      function initializeMajorChart()
+      {
+        var defaultTitle = "Scholarship Allocation by Major";
+        var transform = 'translate('+pieCenterX+', '+pieCenterY+')';
+        var pie = d3.pie();
+        var arc = d3.arc().innerRadius(0).outerRadius(pieRadius);
+        var colors = d3.scaleOrdinal().range(d3.schemeSet3);
+        
+        // Reset chart title
+        var chartTitle = defaultTitle;
+        if(!(selectedCollege === null))
+          chartTitle = selectedCollege + " " + chartTitle;
+        d3.select('div[class=Pie2]').select('h2').text(chartTitle);
+
+        // Cleanup any old elements
+        previousSelectedMajorElement = null
+        d3.select('div[class=Pie2]').select('svg').selectAll('*').remove();
+
+        if(majorAmounts.length > 1)
+        {
+          d3.select('div[class=Pie2]').select('svg')
+            .append('g')
+              .attr('transform',transform)
+            .selectAll('path')
+              .data(pie(majorAmounts))
+              .enter()
+              .append('path')
+                .attr('d',arc)
+                .attr('fill',function(d,i){return colors(i);})
+                .on("click",function(d,i)
+                {
+                  // Don't change selection if it is the same
+                  if(selectedMajor == majorNames[i])
+                    return
+                
+                  d3.select(this)
+                    .attr('stroke','black');
+                  if(!(previousSelectedMajorElement == null))
+                    previousSelectedMajorElement.attr('stroke',previousSelectedMajorElement.attr('fill'));
+                  previousSelectedMajorElement = d3.select(this);
+
+                  // Update charts to reflect that this major has been selected
+                  selectedMajor = majorNames[i];
+                  computeAmountData()
+                  initializeAmountChart();
+                })
+                .on("mouseover",function()
+                  {
+                    d3.select(this).attr('fill-opacity',0.2);
+                  })
+                .on("mouseout",function()
+                  {
+                    d3.select(this).attr('fill-opacity',1);
+                  });
+        }
+        else
+        {
+          d3.select('div[class=Pie2]').select('svg')
+              .append('g')
+                .attr('transform',transform)
+              .selectAll('circle')
+                .data(majorAmounts)
+                .enter()
+                .append('circle')
+                  .attr('r',pieRadius)
+                  .attr('fill',function(d,i){return colors(i);});
+        }
+      }
+      
+      // Initializes the amount line chart (bottom)
+      function initializeAmountChart()
+      {
+        var defaultTitle = "Cumulative Daily Scholarship Amount Over Time";
+        var colors = d3.scaleOrdinal().range(d3.schemeSet3);
+        
+        // Reset chart title
+        var chartTitle = defaultTitle;
+        if(!(selectedMajor === null))
+          chartTitle = selectedMajor + " " + chartTitle;
+        d3.select('div[class=Line]').select('h2').text(chartTitle);
+        
+        // Cleanup any old elements
+        d3.select('div[class=Line]').select('svg').selectAll('*').remove();
+        
+        // Compute X axis scale
+        var minDate = Date.parse("2010-01-02");
+        var maxDate = Date.parse("2015-12-31");
+        var xRange = [];
+        var currentDate = minDate;
+        var dateMonthInterval = 6
+        while(currentDate < maxDate)
+        {
+          xRange.push(currentDate);
+          var currentDateAsDate = new Date(currentDate)
+          currentDateAsDate.setMonth(currentDateAsDate.getMonth()+dateMonthInterval)
+          currentDate = currentDateAsDate.getTime();
+        }
+        xRange.push(maxDate)
+        dateRange = [minDate,maxDate]
+        var xaxis = d3.scaleTime()
+              .domain(dateRange)
+              .range([0,lineWidth]);
+        
+        // Compute X axis
+        var xTranslation = 'translate('+lineOffsetX+', '+(lineHeight+lineOffsetY)+')';
+        d3.select('div[class=Line]').select('svg')
+          .append('g')
+            .attr('transform',xTranslation)
+          .call(d3.axisBottom(xaxis)
+                        .tickValues(xRange)
+                        .tickFormat(d3.timeFormat('%b %Y')));
+
+        // Compute Y axis scale
+        var maxScholarship = 500000
+        var yRange = [1,10,100,1000,10000,100000,500000];
+        var yaxis = d3.scaleLog()
+                      .domain([1,maxScholarship])
+                      .range([lineHeight,0]);
+        
+        // Compute Y axis
+        var yTranslation = 'translate('+lineOffsetX+', '+lineOffsetY+')';
+        d3.select('div[class=Line]').select('svg')
+          .append('g')
+            .attr('transform',yTranslation)
+          .call(d3.axisLeft(yaxis)
+                        .tickValues(yRange)
+                        .tickFormat(d3.format('$~s')));
+                        
+        // If data selected, display line chart
+        if(!(selectedMajor === null))
+        {
+          // Group containing points
+          d3.select('div[class=Line]').select('svg')
+            .append('g')
+              .attr('transform',yTranslation)
+            .selectAll('circle')
+              .data(amountData)
+              .enter().append('circle')
+              .attr('cx',function(d,i){ return xaxis(Date.parse(d['Gift Date'])); })
+              .attr('cy',function(d,i){ return yaxis(d['Gift Amount']); })
+              .attr('r',function(d,i){ return 3; })
+              .attr('fill','green');
+              
+          // Group containing lines (requires more than one data item)
+          if(amountData.length > 1)
+          {
+            lineData = amountData.slice(0,-1);
+            d3.select('div[class=Line]').select('svg')
+              .append('g')
+                .attr('transform',yTranslation)
+              .selectAll('line')
+                .data(lineData)
+                .enter().append('line')
+                .attr('x1',function(d,i){ return xaxis(Date.parse(d['Gift Date'])); })
+                .attr('y1',function(d,i){ return yaxis(d['Gift Amount']); })
+                .attr('x2',function(d,i){ return xaxis(Date.parse(amountData[i+1]['Gift Date'])); })
+                .attr('y2',function(d,i){ return yaxis(amountData[i+1]['Gift Amount']); })
+                .attr('stroke','blue');
+          }
+        }
+        else
+        {
+          // Display no data selected
+        }
+      }
+      
+      // Transitions to scene 1
+      function transitionScene1()
+      {
+      }
+      
+      // Transitions to scene 2
+      function transitionScene2()
+      {
+      }
+      
+      // Transitions to scene 3
+      function transitionScene3()
+      {
+      }
+      
+      // Transitions to scene 4
+      function transitionScene4()
+      {
+      }
+      
+      // Transitions to scene 5
+      function transitionScene5()
+      {
+        // Remove grayout
+        // Enable mouseover events
+        // Hide annotation div
+      }
+
+      // Loads the database and initializes the web page to scene 1 
+      async function init() {
+        // Load scholarship database.
+        scholarshipDatabase  = await d3.csv('scholarships.csv');
+        
+        // Compute initial college data
+        computeCollegeData();
+        
+        // Compute Pie chart dimensions
+        computePieDimensions();
+        
+        // Compute line chart dimensions
+        computeLineDimensions();
+        
+        // Set initial selected college and major to null
+        selectedCollege = null;
+        selectedMajor = null;
+        
+        // Compute initial major data
+        computeMajorData();
+        
+        // Compute initial amount data
+        computeAmountData();
+        
+        // Initialize left pie chart
+        initializeCollegeChart();
+        
+        // Initialize right pie chart
+        initializeMajorChart();
+        
+        // Initialize line chart
+        initializeAmountChart();
+        
+        // Load scene 1
+        transitionScene1();
+      }
+    </script>
   </body>
+  
 </html>
 
