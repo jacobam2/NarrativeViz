@@ -40,6 +40,30 @@
       margin-right: 0;
       margin-bottom: 0;
     }
+    /* Style for annotations */
+    .AnnotationDiv {
+      position: absolute;
+      width: 100%;
+      height: 90%;
+      top: 10%;
+      left: 0%;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+    }
+    /* Style for annotation SVG canvas */
+    .AnnotationSVG {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0%;
+      left: 0%;
+      margin-top: 0%;
+      margin-left: 0%;
+      margin-right: 0%;
+      margin-bottom: 0%;
+    }
     /* Style for first pie chart (left) */
     .Pie1 {
       text-align: center;
@@ -101,27 +125,38 @@
       margin-right: 0%;
       margin-bottom: 0%;
     }
+    /* Style for Annotation */
+    .Annotation {
+      font-weight: bold;
+      opacity: 1
+    }
     /* Style for tooltips */
     .Tooltip {
-    }
-    /* Style for annotations */
-    .Annotation {
     }
   </style>
 
   <!-- Import D3 -->
   <script src='https://d3js.org/d3.v5.min.js'></script>
+  
+  <!-- Import D3 Annotation -->
+  <script src='d3-annotation.js'></script>
 
   <!-- Header just has information about page -->
   <head>  
-    <title>Hypothetical College Scholarship Breakdown 2010-2015</title>
+    <title>College Scholarship Breakdown 2010-2015</title>
     <meta charset="UTF-8">
     <meta name="description" content="This page contains a hypothetical breakdown of college scholarships for a class project for CS416.">
   </head>
 
   <!-- Body has meat of page -->
   <body class="Body" onload="init()">
-    <h1 class="Title">Hypothetical College Scholarship Breakdown 2010-2015</h1>
+    <h1 class="Title">College Scholarship Breakdown 2010-2015</h1>
+
+    <!-- Annotation division -->
+    <div class="AnnotationDiv">
+      <svg class="AnnotationSVG">
+      </svg>
+    </div>
 
     <!-- Left pie chart division -->
     <div class="Pie1">
@@ -144,6 +179,7 @@
       </svg>
     </div>
 
+
     <!-- Body scripts -->
     <script>
       // Parameters
@@ -151,17 +187,20 @@
       var selectedMajor;
       var previousSelectedCollegeElement;
       var previousSelectedMajorElement;
-      var highlightedCollegeElementPreviousColor;
-      var highlightedMajorElementPreviousColor;
+      var sceneNumber;
       
       // Global variables holding views of database
       var collegeNames;
-      var collegeAmounts;
+      var collegePercentages;
       var majorNames;
-      var majorAmounts;
+      var majorPercentages;
       var amountData;
       var scholarshipDatabase;
-      
+
+      // Global variable relating to screen dimensions
+      var bodyWidth;
+      var bodyHeight;
+
       // Global variables relating to pie chart sizing
       var pieRadius;
       var pieCenterX;
@@ -172,6 +211,14 @@
       var lineOffsetY;
       var lineWidth;
       var lineHeight;
+      
+      // Computes body dimensions, excluding title
+      function computeBodyDimensions()
+      {
+        var bodyBBox = d3.select('div[class=AnnotationDiv]').node().getBoundingClientRect();
+        bodyWidth = bodyBBox.width;
+        bodyHeight = bodyBBox.height;
+      }
 
       // Computes pie chart dimensions
       function computePieDimensions()
@@ -216,12 +263,16 @@
         
         // Convert dictionary into arrays
         collegeNames = []
-        collegeAmounts = []
+        collegePercentages = []
+        var total = 0
         for(let key in collegeDataDict)
         {
-          collegeNames.push(key)
-          collegeAmounts.push(collegeDataDict[key])
+          collegeNames.push(key);
+          collegePercentages.push(collegeDataDict[key]);
+          total += collegeDataDict[key];
         }
+        for(let i = 0; i < collegePercentages.length; ++i)
+          collegePercentages[i] /= total;
       }
       
       // Computes the major data given a college selection
@@ -230,7 +281,7 @@
         if(selectedCollege === null)
         {
           majorNames=[null]
-          majorAmounts=[0]
+          majorPercentages=[1]
         }
         else
         {
@@ -251,12 +302,16 @@
           
           // Convert dictionary into arrays
           majorNames = []
-          majorAmounts = []
+          majorPercentages = []
+          var total = 0
           for(let key in majorDataDict)
           {
             majorNames.push(key)
-            majorAmounts.push(majorDataDict[key])
+            majorPercentages.push(majorDataDict[key])
+            total += majorDataDict[key];
           }
+          for(let i = 0; i < majorPercentages.length; ++i)
+            majorPercentages[i] /= total;
         }
       }
 
@@ -298,11 +353,6 @@
         }
       }
 
-      // Selector function for college chart
-      function selectCollege(selectedCollegeElement)
-      {
-      }
-
       // Initializes the college pie chart (left)
       function initializeCollegeChart()
       {
@@ -319,40 +369,105 @@
           .append('g')
             .attr('transform',transform)
           .selectAll('path')
-            .data(pie(collegeAmounts))
+            .data(pie(collegePercentages))
             .enter()
             .append('path')
               .attr('d',arc)
               .attr('fill',function(d,i){return colors(i);})
+              .attr('stroke',function(d,i){ if(selectedCollege == collegeNames[i]) { previousSelectedCollegeElement = d3.select(this); return 'black';} else {return colors(i);}})
+              .attr('stroke-width',function(d,i){ if(selectedCollege == collegeNames[i]) {return 2;} else {return 1;}})
               .on("click",function(d,i)
                 {
                   // Don't change selection if it is the same
-                  if(selectedCollege == collegeNames[i])
+                  if(selectedCollege == collegeNames[i] || sceneNumber < 5)
                     return
                     
                   // Change border around this element
-                  d3.select(this).attr('stroke','black');
+                  d3.select(this).attr('stroke','black')
+                                 .attr('stroke-width',2);
                   if(!(previousSelectedCollegeElement == null))
                   {
-                    previousSelectedCollegeElement.attr('stroke',previousSelectedCollegeElement.attr('fill'));
+                    previousSelectedCollegeElement.attr('stroke',previousSelectedCollegeElement.attr('fill'))
+                                                  .attr('stroke-width',1);
                   }
                   previousSelectedCollegeElement = d3.select(this);
 
                   // Update charts to reflect that this college has been selected
                   selectedCollege = collegeNames[i];
-                  selectedMajor = null;
                   computeMajorData()
+                  selectedMajor = null;
                   initializeMajorChart();
                   computeAmountData()
                   initializeAmountChart();
                 })
-              .on("mouseover",function()
+              .on("mouseover",function(d,i)
                 {
-                  d3.select(this).attr('fill-opacity',0.2);
+                  if(sceneNumber >= 5)
+                  {
+                    // Highlight slice
+                    d3.select(this).attr('fill-opacity',0.2);
+                    
+                    // Compute tooltip metadata
+                    var h1BB = d3.select('h1').node().getBoundingClientRect();
+                    var Pie1BB = d3.select('div[class=Pie1]').select('g').node().getBoundingClientRect();
+                    var selectedBB = d3.select(this).node().getBoundingClientRect();
+                    var annotationX = selectedBB.x + selectedBB.width/2;
+                    var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+                    var noteSize = (h1BB.width-2*Pie1BB.width)/2;
+                    var notePad = 0.025 * noteSize;
+                    var annotationDx;
+                    var annotationDy;
+                    
+                    // Set tooltip side based on slice center
+                    if(annotationX < Pie1BB.x + Pie1BB.width/2)
+                    {
+                      annotationDx = Pie1BB.x-annotationX-(noteSize-2*notePad)/32-notePad;
+                    }
+                    else
+                    {
+                      annotationDx = Pie1BB.x+Pie1BB.width-annotationX+notePad+(noteSize-2*notePad)/32;
+                    }
+                    if(annotationY < Pie1BB.y + Pie1BB.height/2)
+                    {
+                      annotationDy = Pie1BB.y-annotationY;
+                    }
+                    else
+                    {
+                      annotationDy = Pie1BB.y+Pie1BB.width-annotationY;
+                    }
+                    const annotations = [
+                      {
+                        note: 
+                        { 
+                          label: collegeNames[i] + ": " + Number(100*collegePercentages[i]).toFixed(2) + '%',
+                          wrap: (noteSize-2*notePad)/3
+                        },
+                        x: annotationX,
+                        y: annotationY,
+                        dx: annotationDx,
+                        dy: annotationDy
+                      },
+                    ];
+                    
+                    // Register tooltip
+                    d3.select('div[class=AnnotationDiv]').select("svg")
+                      .append('g')
+                        .attr('class','Annotation').call(d3.annotation().annotations(annotations))
+                        .select('rect')
+                          .style('fill-opacity',1)
+                          .style('stroke','black');
+                  }
                 })
-              .on("mouseout",function()
+              .on("mouseout",function(d,i)
                 {
-                  d3.select(this).attr('fill-opacity',1);
+                  if(sceneNumber >= 5)
+                  {
+                    // Remove highlight
+                    d3.select(this).attr('fill-opacity',1);
+                    
+                    // Remove tooltip
+                    d3.select('div[class=AnnotationDiv]').select("svg").selectAll('g').remove();
+                  }
                 });
       }
       
@@ -375,27 +490,31 @@
         previousSelectedMajorElement = null
         d3.select('div[class=Pie2]').select('svg').selectAll('*').remove();
 
-        if(majorAmounts.length > 1)
+        if(majorPercentages.length > 1)
         {
           d3.select('div[class=Pie2]').select('svg')
             .append('g')
               .attr('transform',transform)
             .selectAll('path')
-              .data(pie(majorAmounts))
+              .data(pie(majorPercentages))
               .enter()
               .append('path')
                 .attr('d',arc)
                 .attr('fill',function(d,i){return colors(i);})
+                .attr('stroke',function(d,i){ if(selectedMajor == majorNames[i]) { previousSelectedMajorElement = d3.select(this); return 'black'; } else {return colors(i);} })
+                .attr('stroke-width',function(d,i){ if(selectedMajor == majorNames[i]) { return 2; } else {return 1;} })
                 .on("click",function(d,i)
                 {
-                  // Don't change selection if it is the same
-                  if(selectedMajor == majorNames[i])
+                  // Don't change selection if it is the same or not on scene where selection possible
+                  if(selectedMajor == majorNames[i] || sceneNumber < 5)
                     return
                 
                   d3.select(this)
-                    .attr('stroke','black');
+                    .attr('stroke','black')
+                    .attr('stroke-width',2);
                   if(!(previousSelectedMajorElement == null))
-                    previousSelectedMajorElement.attr('stroke',previousSelectedMajorElement.attr('fill'));
+                    previousSelectedMajorElement.attr('stroke',previousSelectedMajorElement.attr('fill'))
+                                                .attr('stroke-width',1);
                   previousSelectedMajorElement = d3.select(this);
 
                   // Update charts to reflect that this major has been selected
@@ -403,13 +522,172 @@
                   computeAmountData()
                   initializeAmountChart();
                 })
-                .on("mouseover",function()
+                .on("mouseover",function(d,i)
                   {
-                    d3.select(this).attr('fill-opacity',0.2);
+                    if(sceneNumber >= 5)
+                    {
+                      d3.select(this).attr('fill-opacity',0.2);
+                                          
+                      // Compute tooltip metadata
+                      var h1BB = d3.select('h1').node().getBoundingClientRect();
+                      var Pie2BB = d3.select('div[class=Pie2]').select('g').node().getBoundingClientRect();
+                      var selectedBB = d3.select(this).node().getBoundingClientRect();
+                      var annotationX = selectedBB.x + selectedBB.width/2;
+                      var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+                      var noteSize = (h1BB.width-2*Pie2BB.width)/2;
+                      var notePad = 0.025 * noteSize;
+                      var annotationDx;
+                      var annotationDy;
+                      
+                      // Set tooltip side based on slice center
+                      if(annotationX < Pie2BB.x + Pie2BB.width/2)
+                      {
+                        annotationDx = Pie2BB.x - annotationX - notePad - (noteSize-2*notePad)/32;
+                      }
+                      else
+                      {
+                        annotationDx = Pie2BB.width/2 - selectedBB.width/2+notePad+(noteSize-2*notePad)/32;
+                      }
+                      if(annotationY < Pie2BB.y + Pie2BB.height/2)
+                      {
+                        annotationDy = Pie2BB.y - annotationY;
+                      }
+                      else
+                      {
+                        annotationDy = Pie2BB.height/2 - selectedBB.height/2;
+                      }
+                      const annotations = [
+                        {
+                          note: 
+                          {
+                            label: majorNames[i] + ": " + Number(100*majorPercentages[i]).toFixed(2) + '%',
+                            wrap: (noteSize-2*notePad)/3
+                          },
+                          x: annotationX,
+                          y: annotationY,
+                          dx: annotationDx,
+                          dy: annotationDy
+                        },
+                      ];
+                      
+                      // Register tooltip
+                      d3.select('div[class=AnnotationDiv]').select("svg")
+                        .append('g')
+                          .attr('class','Annotation').call(d3.annotation().annotations(annotations))
+                          .select('rect')
+                            .style('fill-opacity',1)
+                            .style('stroke','black');
+                    }
                   })
                 .on("mouseout",function()
                   {
-                    d3.select(this).attr('fill-opacity',1);
+                    if(sceneNumber >= 5)
+                    {
+                      d3.select(this).attr('fill-opacity',1);
+                    
+                      // Remove tooltip
+                      d3.select('div[class=AnnotationDiv]').select("svg").selectAll('g').remove();
+                    }
+                  });
+        }
+        else if(selectedCollege != null)
+        {
+          d3.select('div[class=Pie2]').select('svg')
+            .append('g')
+              .attr('transform',transform)
+            .selectAll('circle')
+              .data(pie(majorPercentages))
+              .enter()
+              .append('circle')
+                .attr('r',pieRadius)
+                .attr('fill',function(d,i){return colors(i);})
+                .attr('stroke',function(d,i){ if(selectedMajor == majorNames[i]) { previousSelectedMajorElement = d3.select(this); return 'black'; } else {return colors(i);} })
+                .attr('stroke-width',function(d,i){ if(selectedMajor == majorNames[i]) { return 2; } else {return 1;} })
+                .on("click",function(d,i)
+                {
+                  // Don't change selection if it is the same or not on scene where selection possible
+                  if(selectedMajor == majorNames[i] || sceneNumber < 5)
+                    return
+                
+                  d3.select(this)
+                    .attr('stroke','black')
+                    .attr('stroke-width',2);
+                  if(!(previousSelectedMajorElement == null))
+                    previousSelectedMajorElement.attr('stroke',previousSelectedMajorElement.attr('fill'))
+                                                .attr('stroke-width',1);
+                  previousSelectedMajorElement = d3.select(this);
+
+                  // Update charts to reflect that this major has been selected
+                  selectedMajor = majorNames[i];
+                  computeAmountData()
+                  initializeAmountChart();
+                })
+                .on("mouseover",function(d,i)
+                  {
+                    if(sceneNumber >= 5)
+                    {
+                      d3.select(this).attr('fill-opacity',0.2);
+                                          
+                      // Compute tooltip metadata
+                      var h1BB = d3.select('h1').node().getBoundingClientRect();
+                      var Pie2BB = d3.select('div[class=Pie2]').select('g').node().getBoundingClientRect();
+                      var selectedBB = d3.select(this).node().getBoundingClientRect();
+                      var annotationX = selectedBB.x + selectedBB.width/2;
+                      var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+                      var noteSize = (h1BB.width-2*Pie2BB.width)/2;
+                      var notePad = 0.025 * noteSize;
+                      var annotationDx;
+                      var annotationDy;
+                      
+                      // Set tooltip side based on slice center
+                      if(annotationX < Pie2BB.x + Pie2BB.width/2)
+                      {
+                        annotationDx = Pie2BB.x - annotationX - notePad - (noteSize-2*notePad)/32;
+                      }
+                      else
+                      {
+                        annotationDx = Pie2BB.width/2 - selectedBB.width/2+notePad+(noteSize-2*notePad)/32;
+                      }
+                      if(annotationY < Pie2BB.y + Pie2BB.height/2)
+                      {
+                        annotationDy = Pie2BB.y - annotationY;
+                      }
+                      else
+                      {
+                        annotationDy = Pie2BB.height/2 - selectedBB.height/2;
+                      }
+                      const annotations = [
+                        {
+                          note: 
+                          {
+                            label: majorNames[i] + ": " + Number(100*majorPercentages[i]).toFixed(2) + '%',
+                            wrap: (noteSize-2*notePad)/3
+                          },
+                          x: annotationX,
+                          y: annotationY,
+                          dx: annotationDx,
+                          dy: annotationDy
+                        },
+                      ];
+                      
+                      // Register tooltip
+                      d3.select('div[class=AnnotationDiv]').select("svg")
+                        .append('g')
+                          .attr('class','Annotation').call(d3.annotation().annotations(annotations))
+                          .select('rect')
+                            .style('fill-opacity',1)
+                            .style('stroke','black');
+                    }
+                  })
+                .on("mouseout",function()
+                  {
+                    if(sceneNumber >= 5)
+                    {
+                      d3.select(this).attr('fill-opacity',1);
+                    
+                      // Remove tooltip
+                      d3.select('div[class=AnnotationDiv]').select("svg").selectAll('g').remove();
+                    }
                   });
         }
         else
@@ -418,7 +696,7 @@
               .append('g')
                 .attr('transform',transform)
               .selectAll('circle')
-                .data(majorAmounts)
+                .data(majorPercentages)
                 .enter()
                 .append('circle')
                   .attr('r',pieRadius)
@@ -497,8 +775,75 @@
               .enter().append('circle')
               .attr('cx',function(d,i){ return xaxis(Date.parse(d['Gift Date'])); })
               .attr('cy',function(d,i){ return yaxis(d['Gift Amount']); })
-              .attr('r',function(d,i){ return 3; })
-              .attr('fill','green');
+              .attr('r',function(d,i){ return 4; })
+              .attr('fill','green')
+              .on("mouseover",function(d,i)
+                {
+                  if(sceneNumber >= 5)
+                  {
+                    d3.select(this).attr('r',6);
+
+                    // Compute tooltip metadata
+                    var h1BB = d3.select('h1').node().getBoundingClientRect();
+                    var LineBB = d3.select('div[class=Line]').select('g').node().getBoundingClientRect();
+                    var selectedBB = d3.select(this).node().getBoundingClientRect();
+                    var annotationX = selectedBB.x + selectedBB.width/2;
+                    var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+                    var noteSize = 0.025 * h1BB.width;
+                    var notePad = 0.025 * noteSize;
+                    var annotationDx;
+                    var annotationDy;
+                    
+                    // Set tooltip side based on slice center
+                    if(annotationX < LineBB.width/2)
+                    {
+                      annotationDx = selectedBB.width/2 + notePad;
+                    }
+                    else
+                    {
+                      annotationDx = -(selectedBB.width/2 + notePad);
+                    }
+                    if(annotationY < LineBB.height/2)
+                    {
+                      annotationDy = LineBB.y - annotationY;
+                    }
+                    else
+                    {
+                      annotationDy = LineBB.height/2 - selectedBB.height/2;
+                    }
+                    const annotations = [
+                      {
+                        note: 
+                        {
+                          label:  ""+amountData[i]['Gift Date'] +": " + Number(amountData[i]['Gift Amount']).toLocaleString("en-US", {style: 'currency', currency: 'USD'}),
+                          wrap: (noteSize-2*notePad)/3
+                        },
+                        x: annotationX,
+                        y: annotationY,
+                        dx: annotationDx,
+                        dy: annotationDy
+                      },
+                    ];
+                    
+                    // Register tooltip
+                    d3.select('div[class=AnnotationDiv]').select("svg")
+                      .append('g')
+                        .attr('class','Annotation').call(d3.annotation().annotations(annotations))
+                        .select('rect')
+                          .style('fill-opacity',1)
+                          .style('stroke','black');
+                  }
+                })
+              .on("mouseout",function()
+                {
+                  if(sceneNumber >= 5)
+                  {
+                    d3.select(this).attr('r',4);
+
+                    // Remove tooltip
+                    d3.select('div[class=AnnotationDiv]').select("svg").selectAll('g').remove();
+                  }
+                });
               
           // Group containing lines (requires more than one data item)
           if(amountData.length > 1)
@@ -526,48 +871,287 @@
       // Transitions to scene 1
       function transitionScene1()
       {
+        sceneNumber=1;
+      
+        // Grey out background
+        d3.selectAll('div').style('opacity',0.4);
+        
+        // Bring annotation div to front
+        d3.select('div[class=AnnotationDiv]').raise().style('opacity',1);
+        
+        // Add initial welcome message
+        var initialText = [
+                   "Scholarship funding is an indicator of career opportunities available for a particular major.",
+                   "The following will demonstrate how to use this dashboard to analyze scholarship funding.     ",
+                   "This information may provide helpful insight when deciding on your major.                    ", 
+                   "Click \"begin\" to start the tutorial.                                                                     ",
+                   "If you are on Windows, make sure to hide your task bar to see all plots.                        "];
+        var titleText = "Welcome to the College Scholarship Breakdown!";
+
+        // Construct initial welcome screen
+        var welcomeWidth = bodyWidth * 0.6;
+        var welcomeHeight = bodyHeight * 0.6;
+        var welcomeX = (bodyWidth - welcomeWidth)/2;
+        var welcomeY = (bodyHeight - welcomeHeight)/2;
+        var textXOffset = 0.025 * welcomeWidth;
+        var textYOffset = 0.05 * welcomeHeight;
+        var titleLength = 0.8 * welcomeWidth;
+        var titleHeight = 0.1 * welcomeHeight;
+        var titleX = welcomeX+(welcomeWidth - titleLength)/2;
+        var titleY = welcomeY+textYOffset+titleHeight;
+        var textLength = 0.95 * welcomeWidth;
+        var totalTextHeight = (welcomeHeight-titleHeight-5*textYOffset);
+        var textDy = (0.6*welcomeHeight-2*textYOffset)/initialText.length;
+        var textX = welcomeX+textXOffset;
+        var textY = titleY+2*textYOffset;
+        var buttonWidth = welcomeWidth * 0.15;
+        var buttonHeight = welcomeHeight * 0.15;
+        var buttonXOffset = 0.025 * welcomeWidth;
+        var buttonYOffset = 0.025 * welcomeHeight;
+        var buttonX = welcomeX + welcomeWidth - buttonXOffset - buttonWidth;
+        var buttonY = welcomeY + welcomeHeight - buttonYOffset - buttonHeight;
+        var buttonTextXOffset = 0.025 * buttonWidth;
+        var buttonTextYOffset = 0.025 * buttonHeight;
+        var buttonTextLength = buttonWidth - 2 * buttonTextXOffset;
+        var buttonTextSize = 0.8*(buttonHeight - 2 * buttonTextYOffset);
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append("g")
+          .append('rect')
+            .attr('x',welcomeX)
+            .attr('y',welcomeY)
+            .attr('width',welcomeWidth)
+            .attr('height',welcomeHeight)
+            .attr('fill','white')
+            .style('stroke','black');
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append("g")
+          .append("text")
+            .attr('x',titleX)
+            .attr('y',titleY)
+            .attr('textLength',titleLength)
+            .attr('lengthAdjust','spacingAndGlyphs')
+            .text(titleText)
+            .style('font-weight','bold')
+            .style('font-size',titleHeight);
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append("g")
+          .selectAll('text')
+            .data(initialText)
+            .enter().append('text')
+              .attr('x',textX)
+              .attr('y',textY)
+              .attr('dy',function(d,i){ return i * textDy; })
+              .attr('textLength',textLength)
+              .attr('lengthAdjust','spacing')
+              .text(function(d){ return d; })
+              .attr('xml:space','preserve')
+              .style('font-size',Math.floor(0.5*titleHeight));
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append("g")
+            .append('rect')
+              .attr('x',buttonX)
+              .attr('y',buttonY)
+              .attr('width',buttonWidth)
+              .attr('height',buttonHeight)
+              .attr('fill','grey')
+              .style('stroke','black')
+              .on('click',transitionScene2);
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append("g")
+            .append('text')
+              .attr('x',buttonX+buttonTextXOffset)
+              .attr('y',buttonY+buttonTextYOffset+buttonTextSize)
+              .attr('textLength',buttonTextLength)
+              .attr('lengthAdjust','spacingAndGlyphs')
+              .text('Begin')
+              .style('font-size',buttonTextSize)
+              .on('click',transitionScene2);
       }
       
       // Transitions to scene 2
       function transitionScene2()
       {
+        sceneNumber=2;
+        
+        // Create annotation to explain scene
+        d3.select('div[class=AnnotationDiv]').selectAll('g').remove();
+        d3.select('div[class=Pie1]').style('opacity',1);
+        selectedCollege = collegeNames[0];
+        computeMajorData();
+        initializeCollegeChart();
+        initializeMajorChart();
+        var h1BB = d3.select('h1').node().getBoundingClientRect();
+        var Pie1BB = d3.select('div[class=Pie1]').select('g').node().getBoundingClientRect();
+        var selectedBB = previousSelectedCollegeElement.node().getBoundingClientRect();
+        var noteSize = (h1BB.width-2*Pie1BB.width)/2;
+        var notePad = 0.025 * noteSize;
+        var annotationX = selectedBB.x + selectedBB.width/2;
+        var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+        var annotationDx = Pie1BB.width/2+selectedBB.width/2+notePad;
+        var annotationDy = 0
+        const annotations = [
+          {
+            note: 
+            { 
+              label: "First, select a college of interest. " +
+                     "Hovering over a slice will display the college and relative percentage of total scholarship for that college. " +
+                     "Clicking a slice will select it, displaying the college name and corresponding major data in the chart to the right. " +
+                     "Here, we select the College of Music. " +
+                     "Click here to continue.",
+              wrap: noteSize-2*notePad
+            },
+            x: annotationX,
+            y: annotationY,
+            dx: annotationDx,
+            dy: annotationDy
+          },
+        ];
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append('g')
+            .attr('class','Annotation')
+            .call(d3.annotation().annotations(annotations))
+              .on('click',transitionScene3)
+              .select('rect')
+                .style('fill-opacity',1)
+                .style('stroke','black');
       }
       
       // Transitions to scene 3
       function transitionScene3()
       {
+        sceneNumber=3;
+        d3.select('div[class=AnnotationDiv]').selectAll('g').remove();
+        d3.select('div[class=Pie1]').style('opacity',0.6);
+        d3.select('div[class=Pie2]').style('opacity',1);
+        selectedMajor = majorNames[0];
+        computeMajorData();
+        computeAmountData();
+        initializeMajorChart();
+        initializeAmountChart();
+        var h1BB = d3.select('h1').node().getBoundingClientRect();
+        var Pie2BB = d3.select('div[class=Pie2]').select('g').node().getBoundingClientRect();
+        var selectedBB = previousSelectedMajorElement.node().getBoundingClientRect();
+        var noteSize = (h1BB.width-2*Pie2BB.width)/2;
+        var notePad = 0.025 * noteSize;
+        var annotationX = selectedBB.x + selectedBB.width/2;
+        var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+        var annotationDx = -(Pie2BB.width/2-selectedBB.width/2)-notePad;
+        var annotationDy = 0
+        const annotations = [
+          {
+            note: 
+            { 
+              label: "Next, select a major of interest. " +
+                     "Hovering over a slice will display the major and relative percentage of total scholarships for that major for the given college. " +
+                     "Clicking a slice will select it, displaying the major name and corresponding major data in the chart below. " +
+                     "Here, we select Music major. " +
+                     "Click here to continue.",
+              wrap: noteSize-2*notePad
+            },
+            x: annotationX,
+            y: annotationY,
+            dx: annotationDx,
+            dy: annotationDy
+          },
+        ];
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append('g')
+            .attr('class','Annotation')
+            .call(d3.annotation().annotations(annotations))
+              .on('click',transitionScene4)
+              .select('rect')
+                .style('fill-opacity',1)
+                .style('stroke','black');
       }
       
       // Transitions to scene 4
       function transitionScene4()
       {
+        sceneNumber=4;
+        d3.select('div[class=AnnotationDiv]').selectAll('g').remove();
+        d3.select('div[class=Pie2]').style('opacity',0.6);
+        d3.select('div[class=Line]').style('opacity',1);
+        
+        // Select a random datapoint in the middle for demonstration
+        var selectedDatapoint;
+        d3.select('div[class=Line]').selectAll('circle')
+          .attr('r',function(d,i){ if(i == Math.round(amountData.length / 2)){ selectedDatapoint = d3.select(this); return 6} else{return 4}});
+
+        var h1BB = d3.select('h1').node().getBoundingClientRect();
+        var Pie1BB = d3.select('div[class=Pie1]').select('g').node().getBoundingClientRect();
+        var selectedBB = selectedDatapoint.node().getBoundingClientRect();
+        var noteSize = (h1BB.width-2*Pie1BB.width)/2;
+        var notePad = 0.025 * noteSize;
+        var annotationX = selectedBB.x + selectedBB.width/2;
+        var annotationY = selectedBB.y - h1BB.height + selectedBB.height/2;
+        var annotationDx = Pie1BB.width/2+selectedBB.width/2+notePad;
+        var annotationDy = 0
+        const annotations = [
+          {
+            note: 
+            { 
+              label: "Finally, daily scholarship amounts will be displayed for the college and major you selected. " +
+                     "Hovering over a data point will display the daily total scholarship amount in dollars. " +
+                     "We can see that the amount of scholarship money allocated to music has increased over time, but is currently on a downtrend. " +
+                     "We can conclude that there are more opportunities for music majors than in the past, though current demand may be decreasing." +
+                     "Click here to end tutorial.",
+              wrap: noteSize-2*notePad
+            },
+            className: "show-bg",
+            x: annotationX,
+            y: annotationY,
+            dx: annotationDx,
+            dy: annotationDy
+          },
+        ];
+        d3.select('div[class=AnnotationDiv]').select("svg")
+          .append('g')
+            .attr('class','Annotation')
+            .call(d3.annotation().annotations(annotations))
+              .on('click',transitionScene5)
+              .raise()
+              .select('rect')
+                .style('fill-opacity',1)
+                .style('stroke','black');
       }
       
       // Transitions to scene 5
       function transitionScene5()
       {
-        // Remove grayout
-        // Enable mouseover events
-        // Hide annotation div
+        sceneNumber=5;
+        d3.select('div[class=Line]').selectAll('circle')
+          .attr('r',4);
+        
+        // Fully un-greyout background
+        d3.selectAll('div').style('opacity',1);
+        
+        // Remove everything in annotation div and send to back
+        d3.select('div[class=AnnotationDiv]').lower().select('svg').selectAll('g').remove();
       }
 
       // Loads the database and initializes the web page to scene 1 
       async function init() {
         // Load scholarship database.
         scholarshipDatabase  = await d3.csv('scholarships.csv');
-        
-        // Compute initial college data
-        computeCollegeData();
-        
+
+        // Initialize scene number
+        sceneNumber = 0;
+
+        // Compute body dimensions
+        computeBodyDimensions();
+
         // Compute Pie chart dimensions
         computePieDimensions();
         
         // Compute line chart dimensions
         computeLineDimensions();
-        
-        // Set initial selected college and major to null
+
+        // No college or major selected initially
         selectedCollege = null;
         selectedMajor = null;
+
+        // Compute initial college data
+        computeCollegeData();
         
         // Compute initial major data
         computeMajorData();
